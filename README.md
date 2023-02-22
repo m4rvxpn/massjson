@@ -16,6 +16,7 @@ Install the required Python libraries by running pip install -r requirements.txt
 To use the tool, navigate to the directory containing the masscan_to_nmap.py script and run the following command:
 
 ` python massjson.py json_folder `
+
 where json_folder is the path to the folder containing the Masscan JSON output files.
 
 The tool will map the IP addresses to their open ports using the Masscan JSON files and then run Nmap scans on each IP address and port combination. The Nmap scan results will be saved in a separate .txt file for each IP address.
