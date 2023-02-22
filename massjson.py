@@ -3,6 +3,7 @@ import glob
 import json
 import os
 import subprocess
+from tqdm import tqdm
 
 def parse_masscan_output(masscan_file):
     """Parse Masscan JSON output file and return dictionary of IP addresses and their identified ports"""
@@ -40,11 +41,11 @@ def main():
         os.makedirs(args.output_dir)
 
     ip_ports = {}
-    for masscan_file in masscan_files:
+    for masscan_file in tqdm(masscan_files, desc='Parsing Masscan output'):
         ip_ports.update(parse_masscan_output(masscan_file))
 
-    for ip, ports in ip_ports.items():
-        for port in ports:
+    for ip, ports in tqdm(ip_ports.items(), desc='Running Nmap scans'):
+        for port in tqdm(ports, desc=f'Scanning {ip}'):
             run_nmap_scan(ip, port, args.nmap_options, args.output_dir)
 
 if __name__ == '__main__':
