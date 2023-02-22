@@ -1,50 +1,51 @@
-import json
-import subprocess
-import os
 import argparse
+import glob
+import json
+import os
+import subprocess
 
-def map_ips_to_ports(json_folder):
-    # Create an empty dictionary for storing IP addresses and their associated ports
-    ip_port_dict = {}
+def parse_masscan_output(masscan_file):
+    """Parse Masscan JSON output file and return dictionary of IP addresses and their identified ports"""
+    with open(masscan_file, 'r') as f:
+        results = json.load(f)
+    ip_ports = {}
+    for result in results:
+        ip = result['ip']
+        if ip not in ip_ports:
+            ip_ports[ip] = []
+        for port in result['ports']:
+            ip_ports[ip].append(port['port'])
+    return ip_ports
 
-    # Loop through each file in the folder
-    for filename in os.listdir(json_folder):
-        # Check if the file is a JSON file
-        if filename.endswith('.json'):
-            # Open and read the JSON file
-            with open(os.path.join(json_folder, filename), 'r') as json_file:
-                json_data = json.load(json_file)
+def run_nmap_scan(ip, port, options, nmap_output_dir):
+    """Run Nmap scan against an IP and port combination and write output to a file"""
+    nmap_output_file = os.path.join(nmap_output_dir, f'{ip}_{port}.txt')
+    command = f'nmap {options} -p {port} {ip}'
+    with open(nmap_output_file, 'w') as f:
+        subprocess.run(command, shell=True, stdout=f)
 
-            # Create a dictionary of IP addresses and their open ports from the JSON data
-            for entry in json_data:
-                ip_address = entry['ip']
-                port_list = [int(port.split('/')[0]) for port in entry['ports'].split(',')]
-                if int(ip_address.replace('.', '')) in ip_port_dict:
-                    # If the IP address already exists in the dictionary, merge the new port list with the existing one
-                    ip_port_dict[int(ip_address.replace('.', ''))] = list(set(ip_port_dict[int(ip_address.replace('.', ''))] + port_list))
-                else:
-                    # If the IP address does not yet exist in the dictionary, add it with its port list
-                    ip_port_dict[int(ip_address.replace('.', ''))] = port_list
-
-    return ip_port_dict
-
-def run_nmap_scan(ip_port_dict):
-    # Run Nmap scans on each IP address and port combination in the dictionary
-    for ip_address, port_list in ip_port_dict.items():
-        ip_address_str = f"{ip_address//1000000}.{(ip_address//1000)%1000}.{ip_address%1000}"
-        port_str = ','.join([str(port) for port in port_list])
-        print(f"Running Nmap scan on {ip_address_str} with ports {port_str}...")
-        command = f"nmap -sC -sV -p {port_str} -oN {ip_address_str}.txt {ip_address_str}"
-        subprocess.call(command, shell=True)
-
-if __name__ == "__main__":
-    # Set up command line arguments for the JSON folder path
-    parser = argparse.ArgumentParser()
-    parser.add_argument('json_folder', help='Path to folder containing Masscan JSON output files')
-
-    # Parse the command line arguments
+def main():
+    parser = argparse.ArgumentParser(description='Run Nmap scan against IP addresses and identified ports from Masscan JSON output files')
+    parser.add_argument('masscan_dir', type=str, help='directory containing Masscan JSON output files')
+    parser.add_argument('-o', '--output-dir', type=str, default='nmap_output', help='output directory for Nmap scan results')
+    parser.add_argument('-n', '--nmap-options', type=str, default='-sV -A', help='Nmap scan options')
     args = parser.parse_args()
 
-    # Use the command line argument to map IPs to ports and run Nmap scans
-    ip_port_dict = map_ips_to_ports(args.json_folder)
-    run_nmap_scan(ip_port_dict)
+    masscan_files = glob.glob(os.path.join(args.masscan_dir, '*.json'))
+    if not masscan_files:
+        print(f'No Masscan JSON output files found in {args.masscan_dir}')
+        return
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
+    ip_ports = {}
+    for masscan_file in masscan_files:
+        ip_ports.update(parse_masscan_output(masscan_file))
+
+    for ip, ports in ip_ports.items():
+        for port in ports:
+            run_nmap_scan(ip, port, args.nmap_options, args.output_dir)
+
+if __name__ == '__main__':
+    main()
