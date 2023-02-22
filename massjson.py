@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 def parse_masscan_output(masscan_file):
     """Parse Masscan JSON output file and return dictionary of IP addresses and their identified ports"""
@@ -18,8 +19,9 @@ def parse_masscan_output(masscan_file):
             ip_ports[ip].append(port['port'])
     return ip_ports
 
-def run_nmap_scan(ip, port, options, nmap_output_dir):
+def run_nmap_scan(ip_port, options, nmap_output_dir):
     """Run Nmap scan against an IP and port combination and write output to a file"""
+    ip, port = ip_port
     nmap_output_file = os.path.join(nmap_output_dir, f'{ip}_{port}')
     command = f'nmap {options} -oA {nmap_output_file} -p {port} {ip}'
     with open(nmap_output_file, 'w') as f:
@@ -30,6 +32,7 @@ def main():
     parser.add_argument('masscan_dir', type=str, help='directory containing Masscan JSON output files')
     parser.add_argument('-o', '--output-dir', type=str, default='nmap_output', help='output directory for Nmap scan results')
     parser.add_argument('-n', '--nmap-options', type=str, default='-sV -A', help='Nmap scan options')
+    parser.add_argument('-t', '--threads', type=int, default=10, help='number of threads to use for scanning')
     args = parser.parse_args()
 
     masscan_files = glob.glob(os.path.join(args.masscan_dir, '*.json'))
@@ -44,9 +47,16 @@ def main():
     for masscan_file in tqdm(masscan_files, desc='Parsing Masscan output'):
         ip_ports.update(parse_masscan_output(masscan_file))
 
-    for ip, ports in tqdm(ip_ports.items(), desc='Running Nmap scans'):
-        for port in tqdm(ports, desc=f'Scanning {ip}'):
-            run_nmap_scan(ip, port, args.nmap_options, args.output_dir)
+    ip_port_list = [(ip, port) for ip, ports in ip_ports.items() for port in ports]
+
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
+        futures = []
+        for ip_port in ip_port_list:
+            future = executor.submit(run_nmap_scan, ip_port, args.nmap_options, args.output_dir)
+            futures.append(future)
+
+        for future in tqdm(futures, desc='Running Nmap scans', total=len(futures)):
+            future.result()
 
 if __name__ == '__main__':
     main()
