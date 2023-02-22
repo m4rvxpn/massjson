@@ -22,16 +22,16 @@ To install the necessary dependencies using the provided bash script, follow the
 
 * Run the script with superuser privileges using the following command:
 
-`sudo ./install_dependencies.sh`
+` sudo ./install_dependencies.sh `
 * The script will prompt you for your password. Enter it and press Enter.
 
 * The script will then install Python 3.x, Masscan, and Nmap on your system.
 
 * Once the installation is complete, you can verify that the dependencies were installed correctly by running the following commands:
 
-```python3 --version
-masscan --version
-nmap --version ```
+` python3 --version `
+` masscan --version `
+` nmap --version `
 
 These commands should output the respective versions of Python, Masscan, and Nmap that were installed by the script.
 
