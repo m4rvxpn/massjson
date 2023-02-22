@@ -33,7 +33,7 @@ def run_nmap_scan(ip_port_dict):
     for ip_address, port_list in ip_port_dict.items():
         port_str = ','.join([str(port) for port in port_list])
         print(f"Running Nmap scan on {ip_address} with ports {port_str}...")
-        command = f"nmap -sC -sV -p {port_str} -oN {ip_address}.txt {ip_address}"
+        command = f"nmap -sC -sV -p {port_str} -oA {ip_address} {ip_address}"
         subprocess.call(command, shell=True)
 
 if __name__ == "__main__":
