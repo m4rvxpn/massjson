@@ -36,12 +36,12 @@ To install the necessary dependencies using the provided bash script, follow the
 These commands should output the respective versions of Python, Masscan, and Nmap that were installed by the script.
 
 ## Usage
-` python masscan_nmap_scanner.py <masscan_dir> [-o <output_dir>] [-n <nmap_options>] `
+` python massjson.py <masscan_dir> [-o <output_dir>] [-n <nmap_options>] `
 * masscan_dir: The directory containing Masscan JSON output files. Required.
 * -o <output_dir> or --output-dir <output_dir>: The output directory for Nmap scan results. Default is nmap_output.
 * -n <nmap_options> or --nmap-options <nmap_options>: The Nmap scan options to use. Default is -sV -A.
 
 ## Example
-` python masscan_nmap_scanner.py /path/to/masscan/output -o /path/to/nmap/output -n "-sS -sV --version-all --script=all" `
+` python massjson.py /path/to/masscan/output -o /path/to/nmap/output -n "-sS -sV --version-all --script=all" `
 
 > This will run Nmap scans against IP addresses and identified ports from Masscan JSON output files in the /path/to/masscan/output directory, using the options -sS -sV --version-all --script=all. The results will be written to the /path/to/nmap/output directory.
