@@ -9,8 +9,31 @@ This Python tool can be used to automate the process of running Nmap scans on IP
 
 ## Installation
 Install Masscan and Nmap on your system.
-Clone or download the masscan-to-nmap-tool repository to your local machine.
-Install the required Python libraries by running pip install -r requirements.txt.
+Clone or download the massjson repository to your local machine.
+To install the necessary dependencies using the provided bash script, follow these steps:
+
+* Download the bash script from the GitHub repository.
+
+* Open a terminal window and navigate to the directory where you downloaded the script.
+
+* Run the following command to make the script executable:
+
+`chmod +x install_dependencies.sh`
+
+* Run the script with superuser privileges using the following command:
+
+`sudo ./install_dependencies.sh`
+* The script will prompt you for your password. Enter it and press Enter.
+
+* The script will then install Python 3.x, Masscan, and Nmap on your system.
+
+* Once the installation is complete, you can verify that the dependencies were installed correctly by running the following commands:
+
+```python3 --version
+masscan --version
+nmap --version ```
+
+These commands should output the respective versions of Python, Masscan, and Nmap that were installed by the script.
 
 ## Usage
 To use the tool, navigate to the directory containing the masscan_to_nmap.py script and run the following command:
