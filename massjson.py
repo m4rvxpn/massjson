@@ -19,21 +19,22 @@ def map_ips_to_ports(json_folder):
             for entry in json_data['scan']:
                 ip_address = entry['ip']
                 port_list = [int(port.split('/')[0]) for port in entry['ports'].split(',')]
-                if ip_address in ip_port_dict:
+                if int(ip_address.replace('.', '')) in ip_port_dict:
                     # If the IP address already exists in the dictionary, merge the new port list with the existing one
-                    ip_port_dict[ip_address] = list(set(ip_port_dict[ip_address] + port_list))
+                    ip_port_dict[int(ip_address.replace('.', ''))] = list(set(ip_port_dict[int(ip_address.replace('.', ''))] + port_list))
                 else:
                     # If the IP address does not yet exist in the dictionary, add it with its port list
-                    ip_port_dict[ip_address] = port_list
+                    ip_port_dict[int(ip_address.replace('.', ''))] = port_list
 
     return ip_port_dict
 
 def run_nmap_scan(ip_port_dict):
     # Run Nmap scans on each IP address and port combination in the dictionary
     for ip_address, port_list in ip_port_dict.items():
+        ip_address_str = f"{ip_address//1000000}.{(ip_address//1000)%1000}.{ip_address%1000}"
         port_str = ','.join([str(port) for port in port_list])
-        print(f"Running Nmap scan on {ip_address} with ports {port_str}...")
-        command = f"nmap -sC -sV -p {port_str} -oA {ip_address} {ip_address}"
+        print(f"Running Nmap scan on {ip_address_str} with ports {port_str}...")
+        command = f"nmap -sC -sV -p {port_str} -oN {ip_address_str}.txt {ip_address_str}"
         subprocess.call(command, shell=True)
 
 if __name__ == "__main__":
