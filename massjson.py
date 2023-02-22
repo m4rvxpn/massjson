@@ -19,8 +19,8 @@ def parse_masscan_output(masscan_file):
 
 def run_nmap_scan(ip, port, options, nmap_output_dir):
     """Run Nmap scan against an IP and port combination and write output to a file"""
-    nmap_output_file = os.path.join(nmap_output_dir, f'{ip}_{port}.txt')
-    command = f'nmap {options} -p {port} {ip}'
+    nmap_output_file = os.path.join(nmap_output_dir, f'{ip}_{port}')
+    command = f'nmap {options} -oA {nmap_output_file} -p {port} {ip}'
     with open(nmap_output_file, 'w') as f:
         subprocess.run(command, shell=True, stdout=f)
 
