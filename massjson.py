@@ -16,7 +16,7 @@ def map_ips_to_ports(json_folder):
                 json_data = json.load(json_file)
 
             # Create a dictionary of IP addresses and their open ports from the JSON data
-            for entry in json_data['scan']:
+            for entry in json_data:
                 ip_address = entry['ip']
                 port_list = [int(port.split('/')[0]) for port in entry['ports'].split(',')]
                 if int(ip_address.replace('.', '')) in ip_port_dict:
